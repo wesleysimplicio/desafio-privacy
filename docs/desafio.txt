@@ -1,0 +1,76 @@
+Boa tarde, Wesley. Tudo bem?
+
+ 
+
+Segue o desafio técnico e a instrução para realização:
+
+ 
+
+Desafio de Programação: Desenvolvimento de Sistema Integrado com .NET, Node.js, Vue.js e RabbitMQ
+
+ 
+
+Este desafio de programação tem como objetivo avaliar a proficiência no desenvolvimento de sistemas integrados, abrangendo diversas tecnologias e paradigmas de programação. O desafio será dividido em duas etapas, conforme detalhado a seguir:
+
+ 
+
+Etapa 1: Processamento e Enfileiramento de Dados
+
+Desenvolver um sistema em .NET (C#) responsável por:
+
+Leitura de Dados: Implementar a leitura de dados de uma base de dados MongoDB.
+
+Tratamento de Dados: Realizar o tratamento e manipulação dos dados lidos, de acordo com as regras de negócio especificadas pelo candidato.
+
+Envio para Fila: Enviar os dados tratados para uma fila de mensagens RabbitMQ.
+
+ 
+
+ 
+
+Etapa 2: Consumo e Apresentação de Dados
+
+Desenvolver um sistema composto por duas partes:
+
+Backend (Node.js): Responsável por consumir as mensagens da fila RabbitMQ e persistir as mensagens na base do MongoDB.
+
+Frontend (Vue.js): Responsável por exibir as informações tratadas em uma interface web. O frontend deverá ser desenvolvido utilizando o framework Vue.js e implementado como um Web Component.
+
+Tecnologias Envolvidas
+
+O desafio abrange as seguintes tecnologias:
+
+Backend: C# (.NET) e Node.js
+
+Frontend: ASP.NET e Vue.js (Web Components)
+
+Banco de Dados: MongoDB
+
+Mensageria: RabbitMQ
+
+ 
+
+Compartilhamento do Código
+
+O código fonte do projeto deverá ser disponibilizado em um repositório público no GitHub. O link para o repositório deverá ser fornecido juntamente com a entrega do desafio, permitindo a avaliação do código por outros desenvolvedores e pela equipe avaliadora.
+
+ 
+
+Critérios de Avaliação do desafio:
+
+Conhecimento das Tecnologias: Demonstração de proficiência no uso das tecnologias especificadas.
+
+Qualidade do Código: Clareza, organização, legibilidade e manutenibilidade do código.
+
+Performance: Desempenho e otimização do sistema.
+
+ 
+
+ 
+
+Boa sorte!!!
+
+ 
+
+Obrigada.
+
