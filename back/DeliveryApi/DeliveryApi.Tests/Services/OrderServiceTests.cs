@@ -1,4 +1,5 @@
 ﻿// DeliveryApi.Tests/Services/OrderServiceTests.cs
+using DeliveryApi.Application.Interfaces;
 using DeliveryApi.Application.Services;
 using DeliveryApi.Domain.Entities;
 using DeliveryApi.Domain.Repositories;
@@ -13,12 +14,15 @@ namespace DeliveryApi.Tests.Services
     public class OrderServiceTests
     {
         private readonly Mock<IOrderRepository> _mockOrderRepository;
+        private readonly Mock<IMessageProducer> _mockMessageProducer;
         private readonly OrderService _orderService;
 
         public OrderServiceTests()
         {
             _mockOrderRepository = new Mock<IOrderRepository>();
-            _orderService = new OrderService(_mockOrderRepository.Object);
+            _mockMessageProducer = new Mock<IMessageProducer>();
+
+            _orderService = new OrderService(_mockOrderRepository.Object, _mockMessageProducer.Object);
         }
 
         [Fact]

@@ -11,6 +11,8 @@ using System.Text;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using DeliveryApi.Application.DTOs;
+using DeliveryApi.Application.Interfaces;
+using DeliveryApi.Infrastructure.Messaging;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +23,13 @@ builder.Services.AddScoped<IValidator<CreateOrderRequest>, CreateOrderRequestVal
 builder.Services.AddScoped<IValidator<OrderItemDto>, OrderItemDtoValidator>();
 
 builder.Services.AddControllers();
+
+// Configuração do RabbitMQ
+var rabbitMqSettings = builder.Configuration.GetSection("RabbitMqSettings").Get<RabbitMqSettings>();
+builder.Services.AddSingleton(rabbitMqSettings);
+
+// Registrar o serviço de envio de mensagens
+builder.Services.AddSingleton<IMessageProducer, RabbitMqProducer>();
 
 // Configuração do MongoDB
 var mongoDbSettings = builder.Configuration.GetSection("MongoDbSettings").Get<MongoDbSettings>();
@@ -104,7 +113,11 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "API v1");
+        c.RoutePrefix = string.Empty;
+    });
 }
 
 app.UseHttpsRedirection();

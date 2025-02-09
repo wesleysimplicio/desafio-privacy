@@ -10,7 +10,7 @@ namespace DeliveryApi.Web.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+    //[Authorize]
     public class OrdersController : ControllerBase
     {
         private readonly OrderService _orderService;
