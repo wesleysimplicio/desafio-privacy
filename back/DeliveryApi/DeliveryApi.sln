@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35707.178 d17.12
+VisualStudioVersion = 17.12.35707.178
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeliveryApi.Web", "DeliveryApi.Web\DeliveryApi.Web.csproj", "{6344FD7F-BF22-4BC0-B1A4-349216CBD255}"
 EndProject
@@ -12,6 +12,16 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeliveryApi.Domain", "DeliveryApi.Domain\DeliveryApi.Domain.csproj", "{603C1CD2-6B7D-4E20-906E-ECD5C2D2A702}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeliveryApi.Tests", "DeliveryApi.Tests\DeliveryApi.Tests.csproj", "{7A372800-6227-42B1-81C1-822A3EB4B143}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "1.Apresentation", "1.Apresentation", "{E62767FC-308D-473E-B486-0E65291C4E59}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "2.Application", "2.Application", "{5EF958AF-53CF-4BE6-A410-A9EBE6A5D475}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3.Infrastructure", "3.Infrastructure", "{851AFAB5-0216-4AB2-9F56-2F31C6D20249}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "4.Domain", "4.Domain", "{1615AF6C-6555-4187-917D-60B9164B663A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "5.Tests", "5.Tests", "{4FE250AE-B423-4E33-AE3C-8F7092EE5FB6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -42,5 +52,12 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{6344FD7F-BF22-4BC0-B1A4-349216CBD255} = {E62767FC-308D-473E-B486-0E65291C4E59}
+		{BD5DCE1D-BE51-40C7-8E03-A18C006F15DC} = {5EF958AF-53CF-4BE6-A410-A9EBE6A5D475}
+		{70E12BD2-630F-4237-B666-064511C563CD} = {851AFAB5-0216-4AB2-9F56-2F31C6D20249}
+		{603C1CD2-6B7D-4E20-906E-ECD5C2D2A702} = {1615AF6C-6555-4187-917D-60B9164B663A}
+		{7A372800-6227-42B1-81C1-822A3EB4B143} = {4FE250AE-B423-4E33-AE3C-8F7092EE5FB6}
 	EndGlobalSection
 EndGlobal

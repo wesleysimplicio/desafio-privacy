@@ -10,7 +10,7 @@ namespace DeliveryApi.Web.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    //[Authorize]
+    [Authorize]
     public class OrdersController : ControllerBase
     {
         private readonly OrderService _orderService;
@@ -53,8 +53,7 @@ namespace DeliveryApi.Web.Controllers
                     return BadRequest(validationResult.ToDictionary());
                 }
 
-                var orderItems = request.Items.Select(item => new OrderItem(item.ProductName, item.Quantity, item.Price)).ToList();
-                await _orderService.CreateOrderAsync(request.CustomerName, request.Status, orderItems);
+                await _orderService.CreateOrderAsync(request);
                 return Ok();
             }
             catch (Exception ex)

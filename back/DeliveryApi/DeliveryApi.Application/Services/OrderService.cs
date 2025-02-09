@@ -1,4 +1,5 @@
-﻿using DeliveryApi.Application.Interfaces;
+﻿using DeliveryApi.Application.DTOs;
+using DeliveryApi.Application.Interfaces;
 using DeliveryApi.Domain.Entities;
 using DeliveryApi.Domain.Repositories;
 using System;
@@ -25,9 +26,10 @@ namespace DeliveryApi.Application.Services
             return await _orderRepository.GetByIdAsync(id);
         }
 
-        public async Task CreateOrderAsync(string customerName, bool status, List<OrderItem> items)
+        public async Task CreateOrderAsync(CreateOrderRequest request)
         {
-            var order = new Order(customerName, status, items);
+            var orderItems = request.Items.Select(item => new OrderItem(item.ProductName, item.Quantity, item.Price)).ToList();
+            var order = new Order(request.CustomerName, request.Status, orderItems);
             //await _orderRepository.AddAsync(order);
 
             // Enviar o pedido para a fila do RabbitMQ
