@@ -1,0 +1,16 @@
+#VSCODE
+*.vs
+/.vscode/launch.json
+/.vscode/tasks.json
+#IGNORA ARQUIVOS GERADOS NO PROCESSO DE BUILD DO VISUAL STUDIO
+**/obj
+**/Properties/PublishProfiles
+**/bin
+**/packages
+/.vs
+#VIM FILES
+**/*~
+#UNIT TESTS
+**/TestResults/
+#PROJETO
+**/*.csproj.user
