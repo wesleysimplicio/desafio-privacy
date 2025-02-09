@@ -2,9 +2,11 @@
 using MongoDB.Bson.Serialization.Attributes;
 using System;
 using System.Collections.Generic;
+using DeliveryApi.Domain.Attributes;
 
 namespace DeliveryApi.Domain.Entities
 {
+    [BsonCollection("orders")]
     public class Order
     {
         [BsonId]
@@ -24,10 +26,8 @@ namespace DeliveryApi.Domain.Entities
         [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
         public DateTime CreatedAt { get; private set; }
 
-        // Construtor sem parâmetros (necessário para o MongoDB)
         public Order()
         {
-            // Inicializa as propriedades com valores padrão
             Id = Guid.NewGuid();
             CustomerName = string.Empty;
             Status = false;

@@ -1,4 +1,4 @@
-﻿// DeliveryApi.Tests/Services/OrderServiceTests.cs
+﻿using DeliveryApi.Application.DTOs;
 using DeliveryApi.Application.Interfaces;
 using DeliveryApi.Application.Services;
 using DeliveryApi.Domain.Entities;
@@ -6,23 +6,23 @@ using DeliveryApi.Domain.Repositories;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace DeliveryApi.Tests.Services
+namespace DeliveryApi.Tests.Application.Services
 {
     public class OrderServiceTests
     {
-        private readonly Mock<IOrderRepository> _mockOrderRepository;
-        private readonly Mock<IMessageProducer> _mockMessageProducer;
+        private readonly Mock<IOrderRepository> _orderRepositoryMock;
+        private readonly Mock<IMessageProducer> _messageProducerMock;
         private readonly OrderService _orderService;
 
         public OrderServiceTests()
         {
-            _mockOrderRepository = new Mock<IOrderRepository>();
-            _mockMessageProducer = new Mock<IMessageProducer>();
-
-            _orderService = new OrderService(_mockOrderRepository.Object, _mockMessageProducer.Object);
+            _orderRepositoryMock = new Mock<IOrderRepository>();
+            _messageProducerMock = new Mock<IMessageProducer>();
+            _orderService = new OrderService(_orderRepositoryMock.Object, _messageProducerMock.Object);
         }
 
         [Fact]
@@ -30,17 +30,15 @@ namespace DeliveryApi.Tests.Services
         {
             // Arrange
             var orderId = Guid.NewGuid();
-            var order = new Order("Customer1", false, new List<OrderItem> { new OrderItem("Product1", 1, 10) }, orderId);
-
-            _mockOrderRepository.Setup(repo => repo.GetByIdAsync(orderId)).ReturnsAsync(order);
+            var expectedOrder = new Order("Customer Name", true, new List<OrderItem>());
+            _orderRepositoryMock.Setup(repo => repo.GetByIdAsync(orderId)).ReturnsAsync(expectedOrder);
 
             // Act
             var result = await _orderService.GetOrderByIdAsync(orderId);
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(orderId, result.Id);
-            _mockOrderRepository.Verify(repo => repo.GetByIdAsync(orderId), Times.Once);
+            Assert.Equal(expectedOrder, result);
         }
 
         [Fact]
@@ -48,61 +46,60 @@ namespace DeliveryApi.Tests.Services
         {
             // Arrange
             var orderId = Guid.NewGuid();
-            _mockOrderRepository.Setup(repo => repo.GetByIdAsync(orderId)).ReturnsAsync((Order)null);
+            _orderRepositoryMock.Setup(repo => repo.GetByIdAsync(orderId)).ReturnsAsync((Order)null);
 
             // Act
             var result = await _orderService.GetOrderByIdAsync(orderId);
 
             // Assert
             Assert.Null(result);
-            _mockOrderRepository.Verify(repo => repo.GetByIdAsync(orderId), Times.Once);
         }
 
         [Fact]
-        public async Task CreateOrderAsync_ShouldCallAddAsync_WithValidOrder()
+        public async Task CreateOrderAsync_ShouldSendMessageToQueue()
         {
             // Arrange
-            var customerName = "Customer1";
-            var status = false;
-            var items = new List<OrderItem> { new OrderItem("Product1", 1, 10) };
-
-            _mockOrderRepository.Setup(repo => repo.AddAsync(It.IsAny<Order>())).Returns(Task.CompletedTask);
+            var request = new CreateOrderRequest
+            {
+                CustomerName = "Customer Name",
+                Status = true,
+                Items = new List<OrderItemDto>
+                {
+                    new OrderItemDto { ProductName = "Product 1", Quantity = 1, Price = 10.0m }
+                }
+            };
 
             // Act
-            await _orderService.CreateOrderAsync(customerName, status, items);
+            await _orderService.CreateOrderAsync(request);
 
             // Assert
-            _mockOrderRepository.Verify(repo => repo.AddAsync(It.Is<Order>(o => o.CustomerName == customerName && o.Status == status && o.Items.Count == 1)), Times.Once);
+            _messageProducerMock.Verify(producer => producer.SendMessageAsync(It.IsAny<Order>()), Times.Once);
         }
 
         [Fact]
-        public async Task UpdateOrderAsync_ShouldCallUpdateAsync_WithValidOrder()
+        public async Task UpdateOrderAsync_ShouldSendMessageToQueue()
         {
             // Arrange
-            var order = new Order("Customer1", false, new List<OrderItem> { new OrderItem("Product1", 1, 10) });
-
-            _mockOrderRepository.Setup(repo => repo.UpdateAsync(order)).Returns(Task.CompletedTask);
+            var order = new Order("Customer Name", true, new List<OrderItem>());
 
             // Act
             await _orderService.UpdateOrderAsync(order);
 
             // Assert
-            _mockOrderRepository.Verify(repo => repo.UpdateAsync(order), Times.Once);
+            _messageProducerMock.Verify(producer => producer.SendMessageAsync(order), Times.Once);
         }
 
         [Fact]
-        public async Task DeleteOrderAsync_ShouldCallDeleteAsync_WithValidId()
+        public async Task DeleteOrderAsync_ShouldCallRepositoryDelete()
         {
             // Arrange
             var orderId = Guid.NewGuid();
-
-            _mockOrderRepository.Setup(repo => repo.DeleteAsync(orderId)).Returns(Task.CompletedTask);
 
             // Act
             await _orderService.DeleteOrderAsync(orderId);
 
             // Assert
-            _mockOrderRepository.Verify(repo => repo.DeleteAsync(orderId), Times.Once);
+            _orderRepositoryMock.Verify(repo => repo.DeleteAsync(orderId), Times.Once);
         }
     }
 }

@@ -1,5 +1,4 @@
-version: '3.8'
-services:
+﻿services:
   deliveryapi:
     image: deliveryapi
     build:
@@ -8,17 +7,50 @@ services:
     ports:
       - "5000:80"
     environment:
-      - MongoDbSettings__ConnectionString=mongodb://mongo:27017
+      - MongoDbSettings__ConnectionString=mongodb://mongo:27017/?retryWrites=true&loadBalanced=false&connectTimeoutMS=10000
       - MongoDbSettings__DatabaseName=DeliveryDb
+      - JwtSettings__SecretKey=0a505fe7-78cd-4514-935b-2399bb26f858
+      - JwtSettings__Issuer=DeliveryApi
+      - JwtSettings__Audience=DeliveryApiClients
+      - JwtSettings__ExpiryInMinutes=60
+      - RabbitMqSettings__HostName=rabbitmq
+      - RabbitMqSettings__Port=5672
+      - RabbitMqSettings__UserName=guest
+      - RabbitMqSettings__Password=guest
+      - RabbitMqSettings__QueueName=orders_queue
     depends_on:
       - mongo
+      - rabbitmq
+    networks:
+      - delivery-network
 
   mongo:
     image: mongo:latest
+    container_name: mongodb
+    restart: always
     ports:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
+    networks:
+      - delivery-network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"   # Porta para comunica��o
+      - "15672:15672" # UI do RabbitMQ
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    networks:
+      - delivery-network
 
 volumes:
   mongo-data:
+
+networks:
+  delivery-network:
+    driver: bridge
