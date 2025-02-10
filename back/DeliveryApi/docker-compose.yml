@@ -5,7 +5,7 @@
       context: .
       dockerfile: Dockerfile
     ports:
-      - "5000:80"
+      - "5000:80"  # Mapeia a porta 5000 do host para a porta 80 do contêiner
     environment:
       - MongoDbSettings__ConnectionString=mongodb://mongo:27017/?retryWrites=true&loadBalanced=false&connectTimeoutMS=10000
       - MongoDbSettings__DatabaseName=DeliveryDb
@@ -40,7 +40,7 @@
     container_name: rabbitmq
     restart: always
     ports:
-      - "5672:5672"   # Porta para comunica��o
+      - "5672:5672"   # Porta para comunicação
       - "15672:15672" # UI do RabbitMQ
     environment:
       - RABBITMQ_DEFAULT_USER=guest
