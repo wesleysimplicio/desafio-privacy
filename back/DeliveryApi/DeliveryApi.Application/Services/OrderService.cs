@@ -2,11 +2,7 @@
 using DeliveryApi.Application.Interfaces;
 using DeliveryApi.Domain.Entities;
 using DeliveryApi.Domain.Repositories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using MongoDB.Bson;
 
 namespace DeliveryApi.Application.Services
 {
@@ -66,13 +62,21 @@ namespace DeliveryApi.Application.Services
             await _messageProducer.SendMessageAsync(order);
         }
 
-        public async Task UpdateOrderAsync(OrderDto order)
+        public async Task UpdateOrderAsync(OrderDto request)
         {
-            //await _orderRepository.UpdateAsync(order);
+            var objectId = ObjectId.Parse(request.Id);
+            var existingOrder = await _orderRepository.GetByIdAsync(objectId);
+            if (existingOrder == null)
+            {
+                throw new Exception("Pedido não encontrado.");
+            }
 
-            // Enviar o pedido para a fila do RabbitMQ
-            await _messageProducer.SendMessageAsync(order);
+            var orderItems = request.Items.Select(item => new OrderItem(item.ProductName, item.Quantity, item.Price)).ToList();
+            var order = new Order(request.CustomerName, request.Status, orderItems, existingOrder.Id, existingOrder.CreatedAt);
+
+            await _orderRepository.UpdateAsync(order);
         }
+
 
         public async Task DeleteOrderAsync(string id)
         {

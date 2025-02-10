@@ -3,6 +3,7 @@ using DeliveryApi.Application.Interfaces;
 using DeliveryApi.Application.Services;
 using DeliveryApi.Domain.Entities;
 using DeliveryApi.Domain.Repositories;
+using MongoDB.Bson;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -14,92 +15,159 @@ namespace DeliveryApi.Tests.Application.Services
 {
     public class OrderServiceTests
     {
-        private readonly Mock<IOrderRepository> _orderRepositoryMock;
-        private readonly Mock<IMessageProducer> _messageProducerMock;
+        private readonly Mock<IOrderRepository> _mockOrderRepository;
+        private readonly Mock<IMessageProducer> _mockMessageProducer;
         private readonly OrderService _orderService;
 
         public OrderServiceTests()
         {
-            _orderRepositoryMock = new Mock<IOrderRepository>();
-            _messageProducerMock = new Mock<IMessageProducer>();
-            _orderService = new OrderService(_orderRepositoryMock.Object, _messageProducerMock.Object);
+            _mockOrderRepository = new Mock<IOrderRepository>();
+            _mockMessageProducer = new Mock<IMessageProducer>();
+            _orderService = new OrderService(_mockOrderRepository.Object, _mockMessageProducer.Object);
         }
 
         [Fact]
-        public async Task GetOrderByIdAsync_ShouldReturnOrder_WhenOrderExists()
+        public async Task GetOrderByIdAsync_ShouldReturnOrderDto()
         {
             // Arrange
-            var orderId = Guid.NewGuid().ToString();
-            var expectedOrder = new Order("Customer Name", true, new List<OrderItem>());
-            _orderRepositoryMock.Setup(repo => repo.GetByIdAsync(orderId)).ReturnsAsync(expectedOrder);
+            var orderId = ObjectId.GenerateNewId().ToString();
+            var lis = new List<OrderItem>
+                {
+                    new OrderItem("Product1", 2, 10.0m)
+                };
+            var order = new Order("John Doe",true, lis, ObjectId.Parse(orderId), DateTime.Now);
+
+
+            _mockOrderRepository.Setup(repo => repo.GetByIdAsync(orderId)).ReturnsAsync(order);
 
             // Act
             var result = await _orderService.GetOrderByIdAsync(orderId);
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(expectedOrder, result);
+            Assert.Equal(orderId, result.Id);
+            Assert.Equal("John Doe", result.CustomerName);
+            Assert.True(result.Status); // Status agora é bool
+            Assert.Single(result.Items);
+            Assert.Equal("Product1", result.Items.First().ProductName);
         }
 
         [Fact]
-        public async Task GetOrderByIdAsync_ShouldReturnNull_WhenOrderDoesNotExist()
+        public async Task GetOrderAsync_ShouldReturnListOfOrderDtos()
         {
             // Arrange
-            var orderId = Guid.NewGuid().ToString();
-            _orderRepositoryMock.Setup(repo => repo.GetByIdAsync(orderId)).ReturnsAsync((Order)null);
+            var orderId = ObjectId.GenerateNewId().ToString();
+            var lis = new List<OrderItem>
+                {
+                    new OrderItem("Product1", 2, 10.0m)
+                };
+            var orders = new List<Order>
+            {
+                 new Order("John Doe",true, lis, ObjectId.Parse(orderId), DateTime.Now)
+            };
+
+            _mockOrderRepository.Setup(repo => repo.GetOrderAsync()).ReturnsAsync(orders);
 
             // Act
-            var result = await _orderService.GetOrderByIdAsync(orderId);
+            var result = await _orderService.GetOrderAsync();
 
             // Assert
-            Assert.Null(result);
+            Assert.NotNull(result);
+            Assert.Single(result);
+            Assert.Equal("John Doe", result.First().CustomerName);
+            Assert.True(result.First().Status); // Status agora é bool
         }
 
         [Fact]
         public async Task CreateOrderAsync_ShouldSendMessageToQueue()
         {
             // Arrange
-            var request = new OrderDto
+            var orderDto = new OrderDto
             {
-                CustomerName = "Customer Name",
-                Status = true,
+                CustomerName = "John Doe",
+                Status = true, // Status agora é bool
                 Items = new List<OrderItemDto>
                 {
-                    new OrderItemDto { ProductName = "Product 1", Quantity = 1, Price = 10.0m }
+                    new OrderItemDto { ProductName = "Product1", Quantity = 2, Price = 10.0m }
                 }
             };
 
+            _mockMessageProducer.Setup(producer => producer.SendMessageAsync(It.IsAny<Order>())).Returns(Task.CompletedTask);
+
             // Act
-            await _orderService.CreateOrderAsync(request);
+            await _orderService.CreateOrderAsync(orderDto);
 
             // Assert
-            _messageProducerMock.Verify(producer => producer.SendMessageAsync(It.IsAny<Order>()), Times.Once);
+            _mockMessageProducer.Verify(producer => producer.SendMessageAsync(It.IsAny<Order>()), Times.Once);
         }
 
         [Fact]
-        public async Task UpdateOrderAsync_ShouldSendMessageToQueue()
+        public async Task UpdateOrderAsync_ShouldUpdateOrder()
         {
             // Arrange
-            var order = new Order("Customer Name", true, new List<OrderItem>());
+            var orderId = ObjectId.GenerateNewId().ToString();
+            var lis = new List<OrderItem>
+                {
+                    new OrderItem("Product1", 2, 10.0m)
+                };
+
+            var existingOrder = new Order("John Doe", true, lis, ObjectId.Parse(orderId), DateTime.Now);
+
+            var updatedOrderDto = new OrderDto
+            {
+                Id = orderId,
+                CustomerName = "John Doe Updated",
+                Status = false, // Status agora é bool
+                Items = new List<OrderItemDto>
+                {
+                    new OrderItemDto { ProductName = "Product1", Quantity = 3, Price = 15.0m }
+                }
+            };
+
+            _mockOrderRepository.Setup(repo => repo.GetByIdAsync(It.IsAny<ObjectId>())).ReturnsAsync(existingOrder);
+            _mockOrderRepository.Setup(repo => repo.UpdateAsync(It.IsAny<Order>())).Returns(Task.CompletedTask);
 
             // Act
-            await _orderService.UpdateOrderAsync(order);
+            await _orderService.UpdateOrderAsync(updatedOrderDto);
 
             // Assert
-            _messageProducerMock.Verify(producer => producer.SendMessageAsync(order), Times.Once);
+            _mockOrderRepository.Verify(repo => repo.UpdateAsync(It.IsAny<Order>()), Times.Once);
         }
 
         [Fact]
-        public async Task DeleteOrderAsync_ShouldCallRepositoryDelete()
+        public async Task DeleteOrderAsync_ShouldDeleteOrder()
         {
             // Arrange
-            var orderId = Guid.NewGuid().ToString();
+            var orderId = ObjectId.GenerateNewId().ToString();
+            _mockOrderRepository.Setup(repo => repo.DeleteAsync(orderId)).Returns(Task.CompletedTask);
 
             // Act
             await _orderService.DeleteOrderAsync(orderId);
 
             // Assert
-            _orderRepositoryMock.Verify(repo => repo.DeleteAsync(orderId), Times.Once);
+            _mockOrderRepository.Verify(repo => repo.DeleteAsync(orderId), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateOrderAsync_ShouldThrowException_WhenOrderNotFound()
+        {
+            // Arrange
+            var orderId = ObjectId.GenerateNewId().ToString();
+            _mockOrderRepository.Setup(repo => repo.GetByIdAsync(It.IsAny<ObjectId>())).ReturnsAsync((Order)null);
+
+            var updatedOrderDto = new OrderDto
+            {
+                Id = orderId,
+                CustomerName = "John Doe Updated",
+                Status = false, // Status agora é bool
+                Items = new List<OrderItemDto>
+                {
+                    new OrderItemDto { ProductName = "Product1", Quantity = 3, Price = 15.0m }
+                }
+            };
+
+            // Act & Assert
+            await Assert.ThrowsAsync<Exception>(() => _orderService.UpdateOrderAsync(updatedOrderDto));
         }
     }
 }

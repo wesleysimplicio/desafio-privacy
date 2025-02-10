@@ -6,7 +6,6 @@ mongoose.connect('mongodb://localhost:27017/DeliveryDb')
   .catch(err => console.error('Erro ao conectar ao MongoDB:', err));
 
 const orderSchema = new mongoose.Schema({
-  _id: String,
   customerName: String,
   status: Boolean,
   items: [
@@ -16,6 +15,7 @@ const orderSchema = new mongoose.Schema({
       price: Number,
     },
   ],
+  createdAt: { type: Date, default: Date.now },
 });
 
 const Orders = mongoose.model('orders', orderSchema);
@@ -48,19 +48,13 @@ async function consumeQueue() {
             quantity: Number(item.Quantity),
             price: Number(item.Price),
           })),
+          createdAt: new Date(),
         }
 
-        // await Orders.deleteOne({ _id: payload.Id });
-        // await Orders.deleteOne({ _id: mongoose.Types.ObjectId(payload.Id) });
+        const order = new Orders(orderData);
+        await order.save(); 
 
-        // Atualiza o pedido se ele já existir, ou cria um novo
-        const order = await Orders.findOneAndUpdate(
-          { _id: payload.Id }, // Condição para encontrar o pedido
-          orderData, // Dados a serem atualizados
-          { upsert: true, new: true } // Cria se não existir e retorna o novo pedido
-        );
-
-        console.log(`[x] Pedido salvo ou atualizado no MongoDB com ID: ${order._id}`);
+        console.log(`[x] Pedido salvo no MongoDB com ID: ${order._id}`);
 
         channel.ack(msg);
       }

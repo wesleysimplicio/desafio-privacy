@@ -23,7 +23,7 @@ namespace DeliveryApi.Domain.Entities
 
         [BsonElement("createdAt")]
         [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
-        public DateTime CreatedAt { get; private set; }
+        public DateTime? CreatedAt { get; private set; }
 
         [BsonIgnore]
         public int __v { get; set; }
@@ -37,13 +37,13 @@ namespace DeliveryApi.Domain.Entities
             CreatedAt = DateTime.UtcNow;
         }
 
-        public Order(string customerName, bool status, List<OrderItem> items, ObjectId? id = null)
+        public Order(string customerName, bool status, List<OrderItem> items, ObjectId? id = null,DateTime? createdAt = null)
         {
             Id = id ?? ObjectId.GenerateNewId();
             CustomerName = customerName;
             Status = status;
             Items = items;
-            CreatedAt = DateTime.UtcNow;
+            CreatedAt = createdAt ?? DateTime.UtcNow;
         }
     }
 }
