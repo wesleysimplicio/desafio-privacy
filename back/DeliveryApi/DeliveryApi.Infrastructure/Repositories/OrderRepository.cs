@@ -15,12 +15,17 @@ namespace DeliveryApi.Infrastructure.Repositories
 
         public OrderRepository(IMongoDatabase database)
         {
-            _orders = database.GetCollection<Order>("Orders");
+            _orders = database.GetCollection<Order>("orders");
         }
 
-        public async Task<Order> GetByIdAsync(Guid id)
+        public async Task<Order> GetByIdAsync(string id)
         {
             return await _orders.Find(o => o.Id == id).FirstOrDefaultAsync();
+        }
+
+        public async Task<IEnumerable<Order>> GetOrderAsync()
+        {
+            return await _orders.FindAsync(o => true).Result.ToListAsync();
         }
 
         public async Task AddAsync(Order order)
@@ -33,7 +38,7 @@ namespace DeliveryApi.Infrastructure.Repositories
             await _orders.ReplaceOneAsync(o => o.Id == order.Id, order);
         }
 
-        public async Task DeleteAsync(Guid id)
+        public async Task DeleteAsync(string id)
         {
             await _orders.DeleteOneAsync(o => o.Id == id);
         }

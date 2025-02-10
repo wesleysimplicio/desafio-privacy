@@ -11,7 +11,7 @@ namespace DeliveryApi.Domain.Entities
     {
         [BsonId]
         [BsonRepresentation(BsonType.String)]
-        public Guid Id { get; private set; }
+        public string Id { get; private set; }
 
         [BsonElement("customerName")]
         public string CustomerName { get; private set; }
@@ -28,16 +28,16 @@ namespace DeliveryApi.Domain.Entities
 
         public Order()
         {
-            Id = Guid.NewGuid();
+            Id = Guid.NewGuid().ToString();
             CustomerName = string.Empty;
             Status = false;
             Items = new List<OrderItem>();
             CreatedAt = DateTime.UtcNow;
         }
 
-        public Order(string customerName,bool status, List<OrderItem> items, Guid? id = null)
+        public Order(string customerName,bool status, List<OrderItem> items, string id = null)
         {
-            Id = id ?? Guid.NewGuid();
+            Id = id ?? Guid.NewGuid().ToString();
             CustomerName = customerName;
             Status = status;
             Items = items;

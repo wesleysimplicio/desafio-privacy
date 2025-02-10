@@ -13,12 +13,15 @@ using FluentValidation.AspNetCore;
 using DeliveryApi.Application.DTOs;
 using DeliveryApi.Application.Interfaces;
 using DeliveryApi.Infrastructure.Messaging;
+using MongoDB.Bson.Serialization.Serializers;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
-builder.Services.AddScoped<OrderService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IValidator<CreateOrderRequest>, CreateOrderRequestValidator>();
 builder.Services.AddScoped<IValidator<OrderItemDto>, OrderItemDtoValidator>();
 
@@ -41,6 +44,7 @@ builder.Services.AddSingleton(mongoDbSettings);
 builder.Services.AddScoped<IMongoClient>(sp => new MongoClient(mongoDbSettings.ConnectionString));
 builder.Services.AddScoped<IMongoDatabase>(sp => sp.GetRequiredService<IMongoClient>().GetDatabase(mongoDbSettings.DatabaseName));
 
+BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
 
 // Registrar validadores do FluentValidation
 builder.Services.AddValidatorsFromAssemblyContaining<CreateOrderRequestValidator>();

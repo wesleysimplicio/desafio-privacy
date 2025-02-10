@@ -14,7 +14,7 @@ namespace DeliveryApi.Domain.Attributes
 
         public BsonCollectionAttribute(string collectionName)
         {
-            CollectionName = collectionName;
+            CollectionName = collectionName.ToLower();
         }
     }
 }

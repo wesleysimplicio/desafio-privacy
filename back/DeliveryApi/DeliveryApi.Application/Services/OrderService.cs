@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace DeliveryApi.Application.Services
 {
-    public class OrderService
+    public class OrderService : IOrderService
     {
         private readonly IOrderRepository _orderRepository;
         private readonly IMessageProducer _messageProducer;
@@ -21,9 +21,14 @@ namespace DeliveryApi.Application.Services
             _messageProducer = messageProducer;
         }
 
-        public async Task<Order> GetOrderByIdAsync(Guid id)
+        public async Task<Order> GetOrderByIdAsync(string id)
         {
             return await _orderRepository.GetByIdAsync(id);
+        }
+
+        public async Task<IEnumerable<Order>> GetOrderAsync()
+        {
+            return await _orderRepository.GetOrderAsync();
         }
 
         public async Task CreateOrderAsync(CreateOrderRequest request)
@@ -44,7 +49,7 @@ namespace DeliveryApi.Application.Services
             await _messageProducer.SendMessageAsync(order);
         }
 
-        public async Task DeleteOrderAsync(Guid id)
+        public async Task DeleteOrderAsync(string id)
         {
             await _orderRepository.DeleteAsync(id);
         }
