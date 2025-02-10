@@ -1,5 +1,5 @@
 ﻿using DeliveryApi.Application.DTOs;
-using DeliveryApi.Application.Services;
+using DeliveryApi.Application.Interfaces;
 using DeliveryApi.Domain.Entities;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
@@ -10,20 +10,20 @@ namespace DeliveryApi.Web.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+    //[Authorize]
     public class OrdersController : ControllerBase
     {
-        private readonly OrderService _orderService;
+        private readonly IOrderService _orderService;
         private readonly ILogger<OrdersController> _logger;
 
-        public OrdersController(OrderService orderService, ILogger<OrdersController> logger)
+        public OrdersController(IOrderService orderService, ILogger<OrdersController> logger)
         {
             _orderService = orderService;
             _logger = logger;
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(Guid id)
+        public async Task<IActionResult> Get(string id)
         {
             try
             {
@@ -37,6 +37,26 @@ namespace DeliveryApi.Web.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro ao buscar pedido por ID.");
+
+                return StatusCode(500, new { Message = "Ocorreu um erro ao processar sua solicitação.", Details = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetOrder()
+        {
+            try
+            {
+                var orders = await _orderService.GetOrderAsync();
+                if (orders == null)
+                {
+                    return NotFound();
+                }
+                return Ok(orders);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao buscar pedidos");
 
                 return StatusCode(500, new { Message = "Ocorreu um erro ao processar sua solicitação.", Details = ex.Message });
             }
@@ -64,7 +84,7 @@ namespace DeliveryApi.Web.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(Guid id, [FromBody] Order order)
+        public async Task<IActionResult> Put(string id, [FromBody] Order order)
         {
             try
             {
@@ -85,7 +105,7 @@ namespace DeliveryApi.Web.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(Guid id)
+        public async Task<IActionResult> Delete(string id)
         {
             try
             {

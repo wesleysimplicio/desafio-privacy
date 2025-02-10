@@ -6,5 +6,11 @@ http://localhost:15672/
 guest
 guest
 
-
+Executar todos no docker
 docker-compose up -d
+
+Vue.js
+npm run serve
+
+Node.js
+node index.js
