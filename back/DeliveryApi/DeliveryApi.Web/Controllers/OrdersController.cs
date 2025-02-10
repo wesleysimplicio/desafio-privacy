@@ -4,6 +4,7 @@ using DeliveryApi.Domain.Entities;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson;
 using System;
 
 namespace DeliveryApi.Web.Controllers
@@ -74,7 +75,7 @@ namespace DeliveryApi.Web.Controllers
                 }
 
                 await _orderService.CreateOrderAsync(request);
-                return Ok();
+                return Ok(request);
             }
             catch (Exception ex)
             {
@@ -84,7 +85,7 @@ namespace DeliveryApi.Web.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(string id, [FromBody] Order order)
+        public async Task<IActionResult> Put(ObjectId id, [FromBody] Order order)
         {
             try
             {

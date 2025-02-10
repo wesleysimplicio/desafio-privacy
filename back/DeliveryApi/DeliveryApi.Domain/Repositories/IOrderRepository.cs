@@ -9,10 +9,10 @@ namespace DeliveryApi.Domain.Repositories
 {
     public interface IOrderRepository
     {
-        Task<Order> GetByIdAsync(string id);
+        Task<Order> GetByIdAsync(Object id);
         Task AddAsync(Order order);
         Task UpdateAsync(Order order);
-        Task DeleteAsync(string id);
+        Task DeleteAsync(Object id);
         Task<IEnumerable<Order>> GetOrderAsync();
     }
 }

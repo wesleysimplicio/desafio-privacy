@@ -10,8 +10,7 @@ namespace DeliveryApi.Domain.Entities
     public class Order
     {
         [BsonId]
-        [BsonRepresentation(BsonType.String)]
-        public string Id { get; private set; }
+        public ObjectId Id { get; private set; }
 
         [BsonElement("customerName")]
         public string CustomerName { get; private set; }
@@ -20,24 +19,27 @@ namespace DeliveryApi.Domain.Entities
         public bool Status { get; private set; }
 
         [BsonElement("items")]
-        public List<OrderItem> Items { get; private set; }
+        public List<OrderItem> Items { get; private set; } = new();
 
-        [BsonElement("createdAt")] 
+        [BsonElement("createdAt")]
         [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
         public DateTime CreatedAt { get; private set; }
 
+        [BsonIgnore]
+        public int __v { get; set; }
+
         public Order()
         {
-            Id = Guid.NewGuid().ToString();
+            Id = ObjectId.GenerateNewId();
             CustomerName = string.Empty;
             Status = false;
-            Items = new List<OrderItem>(); 
+            Items = new List<OrderItem>();
             CreatedAt = DateTime.UtcNow;
         }
 
-        public Order(string customerName,bool status, List<OrderItem> items, string id = null)
+        public Order(string customerName, bool status, List<OrderItem> items, ObjectId? id = null)
         {
-            Id = id ?? Guid.NewGuid().ToString();
+            Id = id ?? ObjectId.GenerateNewId();
             CustomerName = customerName;
             Status = status;
             Items = items;

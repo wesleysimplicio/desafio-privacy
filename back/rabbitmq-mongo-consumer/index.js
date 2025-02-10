@@ -6,13 +6,13 @@ mongoose.connect('mongodb://localhost:27017/DeliveryDb')
   .catch(err => console.error('Erro ao conectar ao MongoDB:', err));
 
 const orderSchema = new mongoose.Schema({
-  CustomerName: String,
-  Status: Boolean,
-  Items: [
+  customerName: String,
+  status: Boolean,
+  items: [
     {
-      ProductName: String,
-      Quantity: Number,
-      Price: Number,
+      productName: String,
+      quantity: Number,
+      price: Number,
     },
   ],
 });
@@ -34,18 +34,18 @@ async function consumeQueue() {
         const payload = JSON.parse(msg.content.toString());
         console.log(`[x] Recebido: ${JSON.stringify(payload)}`);
 
-        if (!payload.Id || !payload.CustomerName || !Array.isArray(payload.Items)) {
+        if (!payload.CustomerName || !Array.isArray(payload.Items)) {
             console.error('Payload inválido:', payload);
             return;
           }
           
         const order = new Orders({
-            CustomerName: payload.CustomerName,
-            Status: Boolean(payload.Status),
-            Items: payload.Items.map(item => ({
-              ProductName: item.ProductName,
-              Quantity: Number(item.Quantity),
-              Price: Number(item.Price),
+            customerName: payload.CustomerName,
+            status: Boolean(payload.Status),
+            items: payload.Items.map(item => ({
+              productName: item.ProductName,
+              quantity: Number(item.Quantity),
+              price: Number(item.Price),
             })),
           });
         await order.save();

@@ -1,5 +1,6 @@
 ﻿using DeliveryApi.Domain.Entities;
 using DeliveryApi.Domain.Repositories;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
@@ -18,14 +19,14 @@ namespace DeliveryApi.Infrastructure.Repositories
             _orders = database.GetCollection<Order>("orders");
         }
 
-        public async Task<Order> GetByIdAsync(string id)
+        public async Task<Order> GetByIdAsync(Object id)
         {
-            return await _orders.Find(o => o.Id == id).FirstOrDefaultAsync();
+            return await _orders.Find(o => o.Id.ToString() == id.ToString()).Project<Order>(Builders<Order>.Projection.Exclude("__v")).FirstOrDefaultAsync();
         }
 
         public async Task<IEnumerable<Order>> GetOrderAsync()
         {
-            return await _orders.FindAsync(o => true).Result.ToListAsync();
+            return await _orders.Find(o => true).Project<Order>(Builders<Order>.Projection.Exclude("__v")).ToListAsync();
         }
 
         public async Task AddAsync(Order order)
@@ -38,9 +39,9 @@ namespace DeliveryApi.Infrastructure.Repositories
             await _orders.ReplaceOneAsync(o => o.Id == order.Id, order);
         }
 
-        public async Task DeleteAsync(string id)
+        public async Task DeleteAsync(Object id)
         {
-            await _orders.DeleteOneAsync(o => o.Id == id);
+            await _orders.DeleteOneAsync(o => o.Id.ToString() == id.ToString());
         }
     }
 }

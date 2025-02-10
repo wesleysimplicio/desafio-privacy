@@ -29,7 +29,7 @@ namespace DeliveryApi.Tests.Application.Services
         public async Task GetOrderByIdAsync_ShouldReturnOrder_WhenOrderExists()
         {
             // Arrange
-            var orderId = Guid.NewGuid();
+            var orderId = Guid.NewGuid().ToString();
             var expectedOrder = new Order("Customer Name", true, new List<OrderItem>());
             _orderRepositoryMock.Setup(repo => repo.GetByIdAsync(orderId)).ReturnsAsync(expectedOrder);
 
@@ -45,7 +45,7 @@ namespace DeliveryApi.Tests.Application.Services
         public async Task GetOrderByIdAsync_ShouldReturnNull_WhenOrderDoesNotExist()
         {
             // Arrange
-            var orderId = Guid.NewGuid();
+            var orderId = Guid.NewGuid().ToString();
             _orderRepositoryMock.Setup(repo => repo.GetByIdAsync(orderId)).ReturnsAsync((Order)null);
 
             // Act
@@ -93,7 +93,7 @@ namespace DeliveryApi.Tests.Application.Services
         public async Task DeleteOrderAsync_ShouldCallRepositoryDelete()
         {
             // Arrange
-            var orderId = Guid.NewGuid();
+            var orderId = Guid.NewGuid().ToString();
 
             // Act
             await _orderService.DeleteOrderAsync(orderId);
