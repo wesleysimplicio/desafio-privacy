@@ -22,7 +22,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IOrderService, OrderService>();
-builder.Services.AddScoped<IValidator<CreateOrderRequest>, CreateOrderRequestValidator>();
+builder.Services.AddScoped<IValidator<OrderDto>, OrderDtoValidator>();
 builder.Services.AddScoped<IValidator<OrderItemDto>, OrderItemDtoValidator>();
 
 builder.Services.AddControllers();
@@ -47,7 +47,7 @@ builder.Services.AddScoped<IMongoDatabase>(sp => sp.GetRequiredService<IMongoCli
 BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
 
 // Registrar validadores do FluentValidation
-builder.Services.AddValidatorsFromAssemblyContaining<CreateOrderRequestValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<OrderDtoValidator>();
 
 // Configuração do JWT
 var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>();

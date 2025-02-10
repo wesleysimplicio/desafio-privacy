@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 
 namespace DeliveryApi.Application.DTOs
 {
-    public class CreateOrderRequest
+    public class OrderDto
     {
+        public string? Id { get; set; }
         public string CustomerName { get; set; }
         public bool Status { get; set; }
         public List<OrderItemDto> Items { get; set; }

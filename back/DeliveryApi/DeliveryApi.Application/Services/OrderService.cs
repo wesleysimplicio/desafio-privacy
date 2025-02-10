@@ -15,23 +15,48 @@ namespace DeliveryApi.Application.Services
         private readonly IOrderRepository _orderRepository;
         private readonly IMessageProducer _messageProducer;
 
+
         public OrderService(IOrderRepository orderRepository, IMessageProducer messageProducer)
         {
             _orderRepository = orderRepository;
             _messageProducer = messageProducer;
         }
 
-        public async Task<Order> GetOrderByIdAsync(string id)
+        public async Task<OrderDto> GetOrderByIdAsync(string id)
         {
-            return await _orderRepository.GetByIdAsync(id);
+            var order = await _orderRepository.GetByIdAsync(id);
+            return new OrderDto
+            {
+                Id = order.Id.ToString(),
+                CustomerName = order.CustomerName,
+                Status = order.Status,
+                Items = order.Items.Select(item => new OrderItemDto
+                {
+                    ProductName = item.ProductName,
+                    Quantity = item.Quantity,
+                    Price = item.Price
+                }).ToList()
+            };
         }
 
-        public async Task<IEnumerable<Order>> GetOrderAsync()
+        public async Task<IEnumerable<OrderDto>> GetOrderAsync()
         {
-            return await _orderRepository.GetOrderAsync();
+            var orders = await _orderRepository.GetOrderAsync();
+            return orders.Select(order => new OrderDto
+            {
+                Id = order.Id.ToString(),
+                CustomerName = order.CustomerName,
+                Status = order.Status,
+                Items = order.Items.Select(item => new OrderItemDto
+                {
+                    ProductName = item.ProductName,
+                    Quantity = item.Quantity,
+                    Price = item.Price
+                }).ToList()
+            }).ToList();
         }
 
-        public async Task CreateOrderAsync(CreateOrderRequest request)
+        public async Task CreateOrderAsync(OrderDto request)
         {
             var orderItems = request.Items.Select(item => new OrderItem(item.ProductName, item.Quantity, item.Price)).ToList();
             var order = new Order(request.CustomerName, request.Status, orderItems);
@@ -41,7 +66,7 @@ namespace DeliveryApi.Application.Services
             await _messageProducer.SendMessageAsync(order);
         }
 
-        public async Task UpdateOrderAsync(Order order)
+        public async Task UpdateOrderAsync(OrderDto order)
         {
             //await _orderRepository.UpdateAsync(order);
 

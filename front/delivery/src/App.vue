@@ -1,15 +1,15 @@
 <template>
   <!-- <img alt="Vue logo" src="./assets/logo.png"> -->
-  <Delivery />
+  <DeliveryComponent />
 </template>
 
 <script>
-import Delivery from './components/Delivery.vue';
+import DeliveryComponent from './components/DeliveryComponent.vue';
 
 export default {
   name: 'App',
   components: {
-    Delivery
+    DeliveryComponent
   }
 }
 </script>

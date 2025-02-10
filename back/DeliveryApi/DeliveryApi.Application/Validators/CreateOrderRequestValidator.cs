@@ -3,9 +3,9 @@ using DeliveryApi.Application.DTOs;
 
 namespace DeliveryApi.Application.Validators
 {
-    public class CreateOrderRequestValidator : AbstractValidator<CreateOrderRequest>
+    public class OrderDtoValidator : AbstractValidator<OrderDto>
     {
-        public CreateOrderRequestValidator()
+        public OrderDtoValidator()
         {
             RuleFor(x => x.CustomerName)
                 .NotEmpty().WithMessage("O nome do cliente é obrigatório.")

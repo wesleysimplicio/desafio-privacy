@@ -59,7 +59,7 @@ namespace DeliveryApi.Tests.Application.Services
         public async Task CreateOrderAsync_ShouldSendMessageToQueue()
         {
             // Arrange
-            var request = new CreateOrderRequest
+            var request = new OrderDto
             {
                 CustomerName = "Customer Name",
                 Status = true,

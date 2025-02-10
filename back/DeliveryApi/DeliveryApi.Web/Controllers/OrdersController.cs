@@ -64,7 +64,7 @@ namespace DeliveryApi.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] CreateOrderRequest request, [FromServices] IValidator<CreateOrderRequest> validator)
+        public async Task<IActionResult> Post([FromBody] OrderDto request, [FromServices] IValidator<OrderDto> validator)
         {
             try
             {
@@ -85,11 +85,11 @@ namespace DeliveryApi.Web.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(ObjectId id, [FromBody] Order order)
+        public async Task<IActionResult> Put(ObjectId id, [FromBody] OrderDto order)
         {
             try
             {
-                if (id != order.Id)
+                if (id.ToString() != order.Id)
                 {
                     return BadRequest();
                 }

@@ -1,5 +1,5 @@
 <template>
-    <div class="container mt-5">
+    <div class="Delivery container mt-5">
         <h1>Delivery</h1>
 
         <!-- Formulário para criar um novo pedido -->
@@ -9,15 +9,18 @@
                 <form @submit.prevent="submitOrder">
                     <div class="form-group">
                         <label for="customerName">Nome do Cliente</label>
-                        <input type="text" class="form-control" id="customerName" v-model="newOrder.customerName" required>
+                        <input type="text" class="form-control" id="customerName" v-model="newOrder.customerName"
+                            required>
                     </div>
                     <div class="form-group">
                         <label for="productName">Nome do Produto</label>
-                        <input type="text" class="form-control" id="productName" v-model="newOrder.items[0].productName" required>
+                        <input type="text" class="form-control" id="productName" v-model="newOrder.items[0].productName"
+                            required>
                     </div>
                     <div class="form-group">
                         <label for="quantity">Quantidade</label>
-                        <input type="number" class="form-control" id="quantity" v-model="newOrder.items[0].quantity" required>
+                        <input type="number" class="form-control" id="quantity" v-model="newOrder.items[0].quantity"
+                            required>
                     </div>
                     <div class="form-group">
                         <label for="price">Preço</label>
@@ -34,9 +37,13 @@
                 <h5 class="card-title">Pedidos em Andamento 🚚</h5>
                 <ul class="list-group">
                     <li v-for="(order, index) in ordersInProgress" :key="order.id || index" class="list-group-item">
-                        {{ order.customerName }} - {{ order.items[0].productName }} ({{ order.items[0].quantity }}x) -
-                        R$ {{ totalOrder(order) }}
-                        <button @click="completeOrder(index)" class="btn btn-sm btn-primary float-right">Finalizar</button>
+                        <span v-if="order.items && order.items.length">
+                            {{ order.customerName }} - {{ order.items[0].productName }} ({{ order.items[0].quantity }}x)
+                            - R$ {{ totalOrder(order) }}
+                        </span>
+
+                        <button @click="completeOrder(index)"
+                            class="btn btn-sm btn-primary float-right">Finalizar</button>
                     </li>
                 </ul>
             </div>
@@ -48,8 +55,11 @@
                 <h5 class="card-title">Histórico de Pedidos ✅</h5>
                 <ul class="list-group">
                     <li v-for="(order, index) in completedOrders" :key="order.id || index" class="list-group-item">
-                        {{ order.customerName }} - {{ order.items[0].productName }} ({{ order.items[0].quantity }}x) -
-                        R$ {{ totalOrder(order) }}
+                        <span v-if="order.items.length">
+                            {{ order.customerName }} - {{ order.items[0].productName }} ({{ order.items[0].quantity }}x)
+                            - R$ {{ totalOrder(order) }}
+                        </span>
+
                     </li>
                 </ul>
             </div>
@@ -64,7 +74,7 @@
 import deliveryService from '../services/delivery.service.js';
 
 export default {
-    name: 'Delivery',
+    name: 'DeliveryComponent',
     data() {
         return {
             newOrder: {
@@ -114,15 +124,25 @@ export default {
         },
         async fetchOrders() {
             try {
-                this.orders = await deliveryService.getOrders();
+                this.orders = (await deliveryService.getOrders()).map(order => ({
+                    ...order,
+                    items: order.items || [],
+                }));
             } catch (error) {
                 console.error('Erro ao carregar pedidos:', error);
             }
         },
-        completeOrder(index) {
+        async completeOrder(index) {
+            if (!this.orders[index]) return;
             this.orders[index].status = false;
+            try {
+                await deliveryService.updateOrder(this.orders[index]);
+            } catch (error) {
+                console.error('Erro ao atualizar pedido:', error);
+            }
         },
         totalOrder(order) {
+            if (!order.items || order.items.length === 0) return 0;
             return order.items[0].quantity * order.items[0].price;
         },
     },
