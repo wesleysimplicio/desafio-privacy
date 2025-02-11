@@ -19,8 +19,8 @@ O projeto é composto pelos seguintes serviços:
 - **deliveryapi**: Serviço em .NET que lê pedidos do MongoDB, processa e envia para o RabbitMQ.
 - **mongo**: Banco de dados MongoDB para armazenamento dos pedidos.
 - **rabbitmq**: Serviço de mensageria para enfileiramento e consumo de mensagens.
-- **backend-node**: Serviço em Node.js que consome pedidos da fila do RabbitMQ e os persiste no MongoDB.
-- **frontend-vue**: Aplicação Vue.js para exibição e gerenciamento dos pedidos.
+- **rabbitmq-mongo-consumer**: Serviço em Node.js que consome pedidos da fila do RabbitMQ e os persiste no MongoDB.
+- **delivery-front**: Aplicação Vue.js para exibição e gerenciamento dos pedidos.
 
 ## Configuração do Ambiente
 
@@ -40,8 +40,7 @@ docker-compose up --build
 - **API .NET**: [http://localhost:8080](http://localhost:8080)
 - **MongoDB**: `mongodb://localhost:27017`
 - **RabbitMQ Management UI**: [http://localhost:15672](http://localhost:15672) (usuário: `guest`, senha: `guest`)
-- **Frontend Vue.js**: [http://localhost:8080](http://localhost:8080)
-- **Backend Node.js**: [http://localhost:3000](http://localhost:3000)
+- **Frontend Vue.js**: [http://localhost:3000](http://localhost:3000)
 
 ## Variáveis de Ambiente
 
@@ -70,15 +69,15 @@ O serviço **deliveryapi** é responsável por:
 
 ### 2. Consumo e Apresentação de Pedidos
 
-- **Backend Node.js**: Consome mensagens da fila `orders_queue` e as persiste no MongoDB.
-- **Frontend Vue.js**: Exibe os pedidos em uma interface web, permitindo a visualização e gerenciamento dos pedidos.
+- **rabbitmq-mongo-consumer**: Consome mensagens da fila `orders_queue` e as persiste no MongoDB.
+- **delivery-front**: Exibe os pedidos em uma interface web, permitindo a visualização e gerenciamento dos pedidos.
 
 ## Fluxo do Sistema
 
 1. O serviço **.NET (deliveryapi)** lê os pedidos do MongoDB.
 2. Os pedidos são processados e enviados para a fila do RabbitMQ.
-3. O **backend Node.js** consome os pedidos da fila e os salva no MongoDB.
-4. O **frontend Vue.js** exibe os pedidos na interface web.
+3. O **rabbitmq-mongo-consumer** consome os pedidos da fila e os salva no MongoDB.
+4. O **delivery-front** exibe os pedidos na interface web.
 
 ## Critérios de Avaliação
 
