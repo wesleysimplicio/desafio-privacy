@@ -37,7 +37,7 @@ docker-compose up --build
 
 ### Passo 3: Acessar os Serviços
 
-- **API .NET**: [http://localhost:5000](http://localhost:5000)
+- **API .NET**: [http://localhost:8080](http://localhost:8080)
 - **MongoDB**: `mongodb://localhost:27017`
 - **RabbitMQ Management UI**: [http://localhost:15672](http://localhost:15672) (usuário: `guest`, senha: `guest`)
 - **Frontend Vue.js**: [http://localhost:8080](http://localhost:8080)

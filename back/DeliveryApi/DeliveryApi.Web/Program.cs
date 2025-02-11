@@ -134,7 +134,11 @@ builder.Services.AddHttpsRedirection(options =>
     options.HttpsPort = null;
 });
 
-builder.WebHost.UseUrls("http://+:5000");
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(8080);
+});
+
 var app = builder.Build();
 
 app.UseCors("AllowAll");

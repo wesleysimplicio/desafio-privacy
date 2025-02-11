@@ -1,15 +1,16 @@
 ﻿services:
   deliveryapi:
     volumes:
-      - ./keys:/keys
+      - ./back/DeliveryApi/keys:/keys
     image: deliveryapi
     build:
-      context: .
+      context: ./back/DeliveryApi
       dockerfile: Dockerfile
     ports:
-      - "5000:8081"
+      - "8080:8080"
     environment:
-      - URLS=http://+:8080
+      - ASPNETCORE_URLS=http://+:8080
+      - DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
       - MongoDbSettings__ConnectionString=mongodb://mongo:27017/?retryWrites=true&loadBalanced=false&connectTimeoutMS=10000
       - MongoDbSettings__DatabaseName=DeliveryDb
       - JwtSettings__SecretKey=0a505fe7-78cd-4514-935b-2399bb26f858
@@ -26,6 +27,38 @@
       - rabbitmq
     networks:
       - delivery-network
+
+  delivery-front:
+    image: node:18
+    container_name: delivery-frontend
+    working_dir: /app
+    volumes:
+      - ./front/delivery:/app
+    ports:
+      - "3000:3000"
+    command: sh -c "npm install && npm run dev -- --host"
+    environment:
+      - VITE_API_URL=http://localhost:8080
+    depends_on:
+      - deliveryapi
+    networks:
+      - delivery-network
+
+  rabbitmq-mongo-consumer:
+    image: node:18
+    container_name: rabbitmq-mongo-consumer
+    working_dir: /app
+    volumes:
+      - ./back/rabbitmq-mongo-consumer:/app
+    command: sh -c "npm install && node index.js"
+    depends_on:
+      - mongo
+      - rabbitmq
+    networks:
+      - delivery-network
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/DeliveryDb
+      - RABBITMQ_URI=amqp://rabbitmq
 
   mongo:
     image: mongo:latest
@@ -48,8 +81,8 @@
     container_name: rabbitmq
     restart: always
     ports:
-      - "5672:5672"   # Porta para comunicação
-      - "15672:15672" # UI do RabbitMQ
+      - "5672:5672"
+      - "15672:15672"
     environment:
       - RABBITMQ_DEFAULT_USER=guest
       - RABBITMQ_DEFAULT_PASS=guest
