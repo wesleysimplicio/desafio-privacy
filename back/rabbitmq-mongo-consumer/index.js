@@ -1,7 +1,8 @@
 const amqp = require('amqplib');
 const mongoose = require('mongoose');
 
-mongoose.connect('mongodb://localhost:27017/DeliveryDb')
+// mongoose.connect('mongodb://localhost:27017/DeliveryDb')
+mongoose.connect('mongodb://mongo:27017/DeliveryDb')
   .then(() => console.log('Conectado ao MongoDB'))
   .catch(err => console.error('Erro ao conectar ao MongoDB:', err));
 
@@ -22,7 +23,9 @@ const Orders = mongoose.model('orders', orderSchema);
 
 async function consumeQueue() {
   try {
-    const connection = await amqp.connect('amqp://localhost');
+    // const connection = await amqp.connect('amqp://localhost');
+    const connection = await amqp.connect('amqp://rabbitmq');
+
     const channel = await connection.createChannel();
 
     const queue = 'orders_queue';
