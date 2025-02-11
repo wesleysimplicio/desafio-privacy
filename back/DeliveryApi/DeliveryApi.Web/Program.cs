@@ -1,4 +1,4 @@
-using DeliveryApi.Application.Services;
+ï»¿using DeliveryApi.Application.Services;
 using DeliveryApi.Application.Validators;
 using DeliveryApi.Domain.Repositories;
 using DeliveryApi.Infrastructure.Repositories;
@@ -16,6 +16,7 @@ using DeliveryApi.Infrastructure.Messaging;
 using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson;
+using Microsoft.AspNetCore.DataProtection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,97 +28,113 @@ builder.Services.AddScoped<IValidator<OrderItemDto>, OrderItemDtoValidator>();
 
 builder.Services.AddControllers();
 
-// Configuração do RabbitMQ
 var rabbitMqSettings = builder.Configuration.GetSection("RabbitMqSettings").Get<RabbitMqSettings>();
 builder.Services.AddSingleton(rabbitMqSettings);
 
-// Registrar o serviço de envio de mensagens
 builder.Services.AddSingleton<IMessageProducer, RabbitMqProducer>();
 
-// Configuração do MongoDB
 var mongoDbSettings = builder.Configuration.GetSection("MongoDbSettings").Get<MongoDbSettings>();
 
-// Registrar MongoDbSettings como um serviço singleton
+// Registrar MongoDbSettings como um serviï¿½o singleton
 builder.Services.AddSingleton(mongoDbSettings);
 
 // Registrar IMongoClient e IMongoDatabase
 builder.Services.AddScoped<IMongoClient>(sp => new MongoClient(mongoDbSettings.ConnectionString));
-builder.Services.AddScoped<IMongoDatabase>(sp => sp.GetRequiredService<IMongoClient>().GetDatabase(mongoDbSettings.DatabaseName));
+builder.Services.AddScoped<IMongoDatabase>(
+    sp => sp.GetRequiredService<IMongoClient>().GetDatabase(mongoDbSettings.DatabaseName)
+);
 
 BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
 
 // Registrar validadores do FluentValidation
 builder.Services.AddValidatorsFromAssemblyContaining<OrderDtoValidator>();
 
-// Configuração do JWT
 var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>();
 builder.Services.AddSingleton(jwtSettings);
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-.AddJwtBearer(options =>
-{
-    options.RequireHttpsMetadata = false;
-    options.SaveToken = true;
-    options.TokenValidationParameters = new TokenValidationParameters
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
     {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = jwtSettings.Issuer,
-        ValidAudience = jwtSettings.Audience,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey))
-    };
-});
+        options.RequireHttpsMetadata = false;
+        options.SaveToken = true;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtSettings.Issuer,
+            ValidAudience = jwtSettings.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwtSettings.SecretKey)
+            )
+        };
+    });
 
 builder.Services.AddAuthorization();
 
-// Configuração do Swagger
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo { Title = "DeliveryApi", Version = "v1" });
 
     // Adicionar suporte para JWT no Swagger
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
-        Name = "Authorization",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
-        BearerFormat = "JWT",
-        Scheme = "Bearer"
-    });
-
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
+    options.AddSecurityDefinition(
+        "Bearer",
+        new OpenApiSecurityScheme
         {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            Array.Empty<string>()
+            Description =
+                "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+            Name = "Authorization",
+            In = ParameterLocation.Header,
+            Type = SecuritySchemeType.ApiKey,
+            BearerFormat = "JWT",
+            Scheme = "Bearer"
         }
-    });
+    );
+
+    options.AddSecurityRequirement(
+        new OpenApiSecurityRequirement
+        {
+            {
+                new OpenApiSecurityScheme
+                {
+                    Reference = new OpenApiReference
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    }
+                },
+                Array.Empty<string>()
+            }
+        }
+    );
 });
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll",
-        policy => policy.AllowAnyOrigin()
-                        .AllowAnyMethod()
-                        .AllowAnyHeader());
+    options.AddPolicy(
+        "AllowAll",
+        policy => policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()
+    );
 });
 
-// Configuração do logging
 builder.Logging.ClearProviders();
-builder.Logging.AddConsole(); 
-builder.Logging.AddDebug(); 
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
 
+builder.Services
+    .AddDataProtection()
+    .SetApplicationName("DeliveryApi")
+    .PersistKeysToFileSystem(new DirectoryInfo("/keys"))
+    .DisableAutomaticKeyGeneration();
 
+builder.Services.AddHttpsRedirection(options =>
+{
+    options.HttpsPort = null;
+});
+
+builder.WebHost.UseUrls("http://+:5000");
 var app = builder.Build();
 
 app.UseCors("AllowAll");
@@ -132,8 +149,6 @@ if (app.Environment.IsDevelopment())
         c.RoutePrefix = string.Empty;
     });
 }
-
-app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();

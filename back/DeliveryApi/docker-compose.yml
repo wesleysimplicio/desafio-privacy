@@ -1,12 +1,15 @@
 ﻿services:
   deliveryapi:
+    volumes:
+      - ./keys:/keys
     image: deliveryapi
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "5000:80"  # Mapeia a porta 5000 do host para a porta 80 do contêiner
+      - "5000:8081"
     environment:
+      - URLS=http://+:8080
       - MongoDbSettings__ConnectionString=mongodb://mongo:27017/?retryWrites=true&loadBalanced=false&connectTimeoutMS=10000
       - MongoDbSettings__DatabaseName=DeliveryDb
       - JwtSettings__SecretKey=0a505fe7-78cd-4514-935b-2399bb26f858
@@ -34,6 +37,11 @@
       - mongo-data:/data/db
     networks:
       - delivery-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:27017"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -47,6 +55,11 @@
       - RABBITMQ_DEFAULT_PASS=guest
     networks:
       - delivery-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:15672"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   mongo-data:
